@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+  #========================================
+  # Project: sdrpp4debian v0.2
+  # Author:  ConzZah / ©️ 2025
+  # Last Modification: 12.08.2025 / 21:11
+  #========================================
+
+sdrpp="SDRPlusPlus"
+echo -e "sdr++4debian\n"
+## create & cd to working dir
+wd="$HOME/.${sdrpp}-src"; mkdir -p "$wd" && cd "$wd" || exit 1
+
+## install dependencies
+echo -e "--> INSTALLING DEPENDENCIES..\n"
+sudo apt install \
+git gcc cmake \
+libfftw3-dev \
+libglfw3-dev \
+libvolk-dev \
+libzstd-dev \
+libairspy-dev \
+libairspyhf-dev \
+librtaudio-dev \
+libhackrf-dev \
+libiio-dev \
+librtlsdr-dev \
+libad9361-dev -yy || exit 1
+
+## get number of cores
+j="$(("$(lscpu -e=core| wc -l)" -1))"
+
+## clone git repo and build
+echo -e "--> CLONING AND BUILDING SDR++..\n"
+if [ -d "$sdrpp" ]; then cd $sdrpp || exit 1
+else git clone "https://github.com/AlexandreRouma/$sdrpp"
+cd "$sdrpp"|| exit 1; fi
+# if build dir already exists, remove it
+[ -d "build" ] && sudo rm -rf build && git pull
+mkdir -p build; cd build || exit 1
+cmake .. && make clean && make -j"$j" || exit 1
+sudo make install || exit 1
+echo -e "--> LAUNCHING SDR++..\n"; sdrpp &
